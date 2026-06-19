@@ -32,12 +32,12 @@ body {
   position: relative;
   isolation: isolate;
   border-radius: 22px;
-  background: linear-gradient(
+  /* background: linear-gradient(
     145deg,
     rgba(255, 255, 255, 0.28) 0%,
     rgba(255, 255, 255, 0.1) 45%,
     rgba(255, 255, 255, 0.18) 100%
-  );
+  ); */
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.42);
@@ -53,12 +53,6 @@ body {
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.38) 0%,
-    rgba(255, 255, 255, 0.06) 38%,
-    rgba(255, 255, 255, 0) 100%
-  );
   pointer-events: none;
 }
 
@@ -187,4 +181,62 @@ body {
 
 .liquid-glass-btn--icon .liquid-glass-btn__content {
   gap: 0;
+}
+
+.transform-crs-download {
+  display: inline-block;
+  max-width: 8rem;
+  border: 0;
+  background: transparent;
+  color: #fff !important;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+  word-break: break-all;
+  cursor: pointer;
+}
+
+.transform-crs-download:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.breath-glow-title {
+  position: relative;
+  line-height: 1.15;
+}
+
+.breath-glow-title__glow {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  filter: blur(30px);
+  animation: breath-glow-breath 2s ease-in-out alternate infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+.breath-glow-title__text {
+  position: relative;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+}
+
+@keyframes breath-glow-breath {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breath-glow-title__glow {
+    animation: none;
+    opacity: 0.7;
+  }
 }

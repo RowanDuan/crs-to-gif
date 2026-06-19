@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClearOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Image, message, Spin, Upload } from "antd";
+import {
+  ClearOutlined,
+  LoadingOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import { Image, message, Spin, Upload } from "antd";
 import type { UploadProps } from "antd";
 
 import LiquidGlassButton from "@/components/LiquidGlassButton/LiquidGlassButton";
@@ -104,7 +108,7 @@ export default function TransformCrs() {
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold text-zinc-900">CRS 转 GIF</h3>
 
-      <p className="text-sm text-zinc-600">
+      <p className="text-sm text-[#000]">
         一次最多上传 {MAX_FILES} 个 Matrix
         键盘动画文件（.crs），将自动解析并转换为 GIF。
       </p>
@@ -117,7 +121,11 @@ export default function TransformCrs() {
           showUploadList={false}
           beforeUpload={handleBeforeUpload}
         >
-          <LiquidGlassButton icon={<UploadOutlined />} loading={loading} disabled={loading}>
+          <LiquidGlassButton
+            icon={<UploadOutlined />}
+            // loading={loading}
+            disabled={loading}
+          >
             选择 CRS 文件（最多 {MAX_FILES} 个）
           </LiquidGlassButton>
         </Upload>
@@ -131,40 +139,54 @@ export default function TransformCrs() {
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-zinc-500">
-          <Spin size="small" />
+        <div className="flex items-center gap-2 text-sm text-white">
+          <Spin
+            size="small"
+            indicator={
+              <LoadingOutlined style={{ color: "#fff", fontSize: 14 }} spin />
+            }
+          />
           <span>正在转换，帧数较多时请稍候…</span>
         </div>
       )}
 
       {!loading && items.length > 0 && (
         <div className="flex flex-row gap-4">
-          {items.map((item) => (
-            <div key={item.uid} className="flex flex-col gap-2">
-              <Image
-                src={item.gifUrl}
-                alt={`${item.fileName}.gif`}
-                width={128}
-                preview={{ mask: "预览" }}
-              />
-              <p className="text-sm text-zinc-600">
-                {item.animInfo.magic} {item.animInfo.width}×
-                {item.animInfo.height} · {item.animInfo.frameCount} 帧
-              </p>
-              <Button
-                type="link"
-                size="small"
-                className="!px-0"
-                onClick={() => {
-                  fetch(item.gifUrl)
-                    .then((r) => r.blob())
-                    .then((blob) => downloadBlob(blob, `${item.fileName}.gif`));
-                }}
-              >
-                下载 {item.fileName}.gif
-              </Button>
-            </div>
-          ))}
+          {items.map((item) => {
+            const handleDownload = () => {
+              fetch(item.gifUrl)
+                .then((r) => r.blob())
+                .then((blob) => downloadBlob(blob, `${item.fileName}.gif`));
+            };
+
+            return (
+              <div key={item.uid} className="flex flex-col gap-2">
+                <Image
+                  src={item.gifUrl}
+                  alt={`${item.fileName}.gif`}
+                  width={128}
+                  preview={{ mask: "预览" }}
+                />
+                <p className="text-sm text-[#000]">
+                  {item.animInfo.magic} {item.animInfo.width}×
+                  {item.animInfo.height} · {item.animInfo.frameCount} 帧
+                </p>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="transform-crs-download"
+                  onClick={handleDownload}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" && e.key !== " ") return;
+                    e.preventDefault();
+                    handleDownload();
+                  }}
+                >
+                  下载 {item.fileName}.gif
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
