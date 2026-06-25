@@ -42,6 +42,71 @@
     opacity 0.4s ease;
 }
 
+.bg-switcher__toggle {
+  transform-origin: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.96);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    visibility 0.5s ease;
+}
+
+.bg-switcher__toggle--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.white-moon-mode .bg-switcher__toggle,
+.white-moon-mode .bg-switcher__toggle:not(:disabled):hover,
+.white-moon-mode .bg-switcher__toggle:not(:disabled):active {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.bg-switcher__toggle--visible.bg-switcher__jelly.liquid-glass-btn,
+.bg-switcher__toggle--visible.bg-switcher__jelly.liquid-glass-btn:not(
+    :disabled
+  ):hover,
+.bg-switcher__toggle--visible.bg-switcher__jelly.liquid-glass-btn:not(
+    :disabled
+  ):active {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-switcher__toggle {
+    transform: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+
+  .bg-switcher__toggle--visible {
+    transform: none;
+  }
+}
+
+.bg-switcher__jelly.liquid-glass-btn,
+.bg-switcher__jelly.liquid-glass-btn:not(:disabled):hover,
+.bg-switcher__jelly.liquid-glass-btn:not(:disabled):active {
+  animation: bg-switcher-jelly-bounce 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+  transition:
+    background-color 0.4s ease,
+    background-image 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease,
+    box-shadow 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.bg-switcher__jelly .liquid-glass-btn__content,
+.bg-switcher__jelly .liquid-glass-btn__icon,
+.bg-switcher__jelly .anticon {
+  animation: bg-switcher-jelly-text 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
 .bg-switcher__white-toggle--rainbow .liquid-glass-btn__content {
   text-shadow:
     0 0 6px rgba(255, 255, 255, 0.65),
@@ -49,13 +114,15 @@
     0 0 24px rgba(255, 255, 255, 0.25);
 }
 
-.bg-switcher__white-toggle--jelly,
-.bg-switcher__white-toggle--jelly:active {
-  animation: bg-switcher-jelly-bounce 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) both;
-}
-
-.bg-switcher__white-toggle--jelly .liquid-glass-btn__content {
-  animation: bg-switcher-jelly-text 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+@media (prefers-reduced-motion: reduce) {
+  .bg-switcher__jelly.liquid-glass-btn,
+  .bg-switcher__jelly.liquid-glass-btn:not(:disabled):hover,
+  .bg-switcher__jelly.liquid-glass-btn:not(:disabled):active,
+  .bg-switcher__jelly .liquid-glass-btn__content,
+  .bg-switcher__jelly .liquid-glass-btn__icon,
+  .bg-switcher__jelly .anticon {
+    animation: none;
+  }
 }
 
 @keyframes bg-switcher-jelly-bounce {
@@ -104,14 +171,6 @@
 
   76% {
     transform: scale(1.03, 0.98);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bg-switcher__white-toggle--jelly,
-  .bg-switcher__white-toggle--jelly:active,
-  .bg-switcher__white-toggle--jelly .liquid-glass-btn__content {
-    animation: none;
   }
 }
 

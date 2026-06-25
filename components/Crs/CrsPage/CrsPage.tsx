@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import clsx from "clsx"
 
 import BackgroundSwitcher from "@/components/Crs/BackgroundSwitcher/BackgroundSwitcher"
 import TransformCrs from "@/components/Crs/TransformCrs/TransformCrs"
@@ -12,7 +13,9 @@ export default function CrsPage() {
 
   return (
     <main
-      className={`crs-page relative min-h-screen overflow-hidden${isWhiteBackground ? " white-moon-mode" : ""}`}
+      className={clsx("crs-page relative min-h-screen overflow-hidden", {
+        "white-moon-mode": isWhiteBackground,
+      })}
     >
       <BackgroundSwitcher
         isWhiteBackground={isWhiteBackground}

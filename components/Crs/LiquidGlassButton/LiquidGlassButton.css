@@ -110,21 +110,8 @@
   gap: 0;
 }
 
-.white-moon-mode .liquid-glass-btn:not(.bg-switcher__white-toggle--rainbow),
-.white-moon-mode
-  .liquid-glass-btn:not(.bg-switcher__white-toggle--rainbow)
-  .anticon,
-.white-moon-mode .liquid-glass-btn__icon {
-  color: #333;
-}
-
-.white-moon-mode
-  .liquid-glass-btn:not(.bg-switcher__white-toggle--rainbow):not(
-    :disabled
-  ):hover,
-.white-moon-mode
-  .liquid-glass-btn:not(.bg-switcher__white-toggle--rainbow):not(
-    :disabled
-  ):active {
+.white-moon-mode .liquid-glass-btn,
+.white-moon-mode .liquid-glass-btn:not(:disabled):hover,
+.white-moon-mode .liquid-glass-btn:not(:disabled):active {
   color: #333;
 }

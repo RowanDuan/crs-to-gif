@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { BgColorsOutlined, ColumnWidthOutlined } from "@ant-design/icons"
+import clsx from "clsx"
 
 import FluidGradientBackground from "@/components/Crs/FluidGradientBackground/FluidGradientBackground"
 import "@/components/Crs/LiquidGlassButton/LiquidGlassButton.css"
@@ -11,6 +12,25 @@ import VideoRasterBackground from "@/components/Crs/VideoRasterBackground/VideoR
 import "./BackgroundSwitcher.css"
 
 type BackgroundMode = "raster" | "fluid"
+
+const MODE_TOGGLE_FADE_MS = 500
+
+function triggerJelly(setJelly: (value: boolean) => void) {
+  setJelly(false)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setJelly(true)
+    })
+  })
+}
+
+function createJellyAnimationEndHandler(setJelly: (value: boolean) => void) {
+  return (event: React.AnimationEvent<HTMLButtonElement>) => {
+    if (event.target !== event.currentTarget) return
+    if (!event.animationName.includes("bg-switcher-jelly-bounce")) return
+    setJelly(false)
+  }
+}
 
 type BackgroundSwitcherProps = {
   isWhiteBackground: boolean
@@ -22,7 +42,10 @@ export default function BackgroundSwitcher({
   onWhiteBackgroundChange,
 }: BackgroundSwitcherProps) {
   const [mode, setMode] = useState<BackgroundMode>("fluid")
-  const [isJellyBouncing, setIsJellyBouncing] = useState(false)
+  const [isWhiteToggleJelly, setIsWhiteToggleJelly] = useState(false)
+  const [isModeToggleJelly, setIsModeToggleJelly] = useState(false)
+  const [modeToggleMounted, setModeToggleMounted] = useState(false)
+  const [modeToggleVisible, setModeToggleVisible] = useState(false)
 
   useEffect(() => {
     const link = document.createElement("link")
@@ -36,23 +59,35 @@ export default function BackgroundSwitcher({
     }
   }, [])
 
+  useEffect(() => {
+    if (!isWhiteBackground) {
+      setModeToggleMounted(true)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setModeToggleVisible(true)
+        })
+      })
+      return
+    }
+
+    setModeToggleVisible(false)
+    const timer = window.setTimeout(() => {
+      setModeToggleMounted(false)
+    }, MODE_TOGGLE_FADE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [isWhiteBackground])
+
   const toggleMode = () => {
+    triggerJelly(setIsModeToggleJelly)
     setMode((current) => (current === "raster" ? "fluid" : "raster"))
   }
 
   const toggleWhiteBackground = () => {
-    setIsJellyBouncing(false)
-    requestAnimationFrame(() => {
-      setIsJellyBouncing(true)
-    })
+    triggerJelly(setIsWhiteToggleJelly)
     onWhiteBackgroundChange(!isWhiteBackground)
-  }
-
-  const handleJellyAnimationEnd = (
-    event: React.AnimationEvent<HTMLButtonElement>
-  ) => {
-    if (event.animationName !== "bg-switcher-jelly-bounce") return
-    setIsJellyBouncing(false)
   }
 
   const isRaster = mode === "raster"
@@ -61,41 +96,59 @@ export default function BackgroundSwitcher({
     <>
       <div className="bg-switcher__layers">
         <div
-          className={`bg-switcher__layer ${isRaster ? "bg-switcher__layer--active" : ""}`}
+          className={clsx("bg-switcher__layer", {
+            "bg-switcher__layer--active": isRaster,
+          })}
         >
           <VideoRasterBackground active={isRaster} />
         </div>
         <div
-          className={`bg-switcher__layer ${!isRaster ? "bg-switcher__layer--active" : ""}`}
+          className={clsx("bg-switcher__layer", {
+            "bg-switcher__layer--active": !isRaster,
+          })}
         >
           <FluidGradientBackground />
         </div>
         <div
-          className={`bg-switcher__layer bg-switcher__layer--white ${isWhiteBackground ? "bg-switcher__layer--active" : ""}`}
+          className={clsx("bg-switcher__layer", "bg-switcher__layer--white", {
+            "bg-switcher__layer--active": isWhiteBackground,
+          })}
         />
       </div>
 
       <div className="bg-switcher__controls">
         <button
           type="button"
-          className={`liquid-glass-btn bg-switcher__white-toggle ${isWhiteBackground ? "bg-switcher__white-toggle--rainbow" : ""} ${isJellyBouncing ? "bg-switcher__white-toggle--jelly" : ""}`}
+          className={clsx("liquid-glass-btn", "bg-switcher__white-toggle", {
+            "bg-switcher__white-toggle--rainbow": isWhiteBackground,
+            "bg-switcher__jelly": isWhiteToggleJelly,
+          })}
           aria-label={isWhiteBackground ? "恢复彩色背景" : "切换到白色背景"}
           title={isWhiteBackground ? "恢复彩色背景" : "切换到白色背景"}
           onClick={toggleWhiteBackground}
-          onAnimationEnd={handleJellyAnimationEnd}
+          onAnimationEnd={createJellyAnimationEndHandler(setIsWhiteToggleJelly)}
         >
           <span className="liquid-glass-btn__content">
             {isWhiteBackground ? "Rainbow" : "White Moon"}
           </span>
         </button>
 
-        {!isWhiteBackground && (
+        {modeToggleMounted && (
           <button
             type="button"
-            className="liquid-glass-btn liquid-glass-btn--icon bg-switcher__toggle"
+            className={clsx(
+              "liquid-glass-btn",
+              "liquid-glass-btn--icon",
+              "bg-switcher__toggle",
+              {
+                "bg-switcher__toggle--visible": modeToggleVisible,
+                "bg-switcher__jelly": isModeToggleJelly,
+              }
+            )}
             aria-label={isRaster ? "切换到流体渐变背景" : "切换到竖条视频背景"}
             title={isRaster ? "切换到流体渐变背景" : "切换到竖条视频背景"}
             onClick={toggleMode}
+            onAnimationEnd={createJellyAnimationEndHandler(setIsModeToggleJelly)}
           >
             <span className="liquid-glass-btn__content">
               {isRaster ? (

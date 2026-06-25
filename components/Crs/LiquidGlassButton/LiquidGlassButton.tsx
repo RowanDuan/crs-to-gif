@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
+import clsx from "clsx";
 
 import "./LiquidGlassButton.css";
 
@@ -20,7 +21,7 @@ export default function LiquidGlassButton({
   return (
     <button
       type={type}
-      className={`liquid-glass-btn ${className}`.trim()}
+      className={clsx("liquid-glass-btn", className)}
       disabled={disabled || loading}
       data-loading={loading || undefined}
       {...rest}
