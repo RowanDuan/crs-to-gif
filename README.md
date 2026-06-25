@@ -17,8 +17,10 @@ pnpm dev
 ## 目录结构
 
 ```
-app/page.tsx                    # CRS 页面入口（根路由 /）
-components/TransformCrs/        # 上传与转换 UI
-lib/crsToGif.ts                 # CRS 解析与 GIF 编码
-types/gifenc.d.ts               # gifenc 类型声明
+app/page.tsx                              # CRS 页面路由入口（根路由 /）
+components/Crs/CrsPage/                   # CRS 页面
+components/Crs/TransformCrs/              # 上传与转换 UI
+components/Crs/BackgroundSwitcher/        # 背景切换
+lib/crsToGif.ts                           # CRS 解析与 GIF 编码
+types/gifenc.d.ts                         # gifenc 类型声明
 ```

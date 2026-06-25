@@ -1,0 +1,45 @@
+.transform-crs-download {
+  display: inline-block;
+  max-width: 8rem;
+  border: 0;
+  background: transparent;
+  color: #fff !important;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+  word-break: break-all;
+  cursor: pointer;
+}
+
+.transform-crs-download:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.transform-crs-loading {
+  color: #fff;
+}
+
+.transform-crs-loading__icon {
+  font-size: 14px;
+  color: currentColor;
+}
+
+.white-moon-mode .transform-crs-loading,
+.white-moon-mode .transform-crs-loading .anticon {
+  color: #333;
+}
+
+.white-moon-mode .transform-crs-download {
+  display: inline-block;
+  background-image: var(--wm-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent !important;
+}
+
+.white-moon-mode .transform-crs-download:hover {
+  opacity: 0.82;
+  color: transparent !important;
+}

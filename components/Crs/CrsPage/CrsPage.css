@@ -1,0 +1,96 @@
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  border-radius: 22px;
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  border-radius: calc(22px - 1px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.liquid-glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+.breath-glow-title {
+  position: relative;
+  line-height: 1.15;
+}
+
+.breath-glow-title__glow {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  filter: blur(30px);
+  animation: breath-glow-breath 2s ease-in-out alternate infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+.breath-glow-title__text {
+  position: relative;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
+}
+
+@keyframes breath-glow-breath {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breath-glow-title__glow {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.white-moon-mode {
+  --wm-gradient-text: linear-gradient(
+    45deg,
+    #70c1ff 0%,
+    #c048ff 28%,
+    #f06292 52%,
+    #ffab91 76%,
+    #ffe082 100%
+  );
+}
+
+.white-moon-mode .breath-glow-title__text {
+  color: #333;
+  text-shadow: none;
+}
+
+.white-moon-mode .breath-glow-title__glow {
+  opacity: 0;
+}

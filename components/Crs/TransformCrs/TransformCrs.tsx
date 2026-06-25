@@ -9,7 +9,7 @@ import {
 import { Image, message, Spin, Upload } from "antd"
 import type { UploadProps } from "antd"
 
-import LiquidGlassButton from "@/components/LiquidGlassButton/LiquidGlassButton"
+import LiquidGlassButton from "@/components/Crs/LiquidGlassButton/LiquidGlassButton"
 
 import {
   crsToGifBlob,
@@ -17,6 +17,8 @@ import {
   parseCrs,
   type CrsAnimInfo,
 } from "@/lib/crsToGif"
+
+import "./TransformCrs.css"
 
 const MAX_FILES = 5
 
@@ -139,11 +141,11 @@ export default function TransformCrs() {
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-white">
+        <div className="transform-crs-loading flex items-center gap-2 text-sm">
           <Spin
             size="small"
             indicator={
-              <LoadingOutlined style={{ color: "#fff", fontSize: 14 }} spin />
+              <LoadingOutlined className="transform-crs-loading__icon" spin />
             }
           />
           <span>正在转换，帧数较多时请稍候…</span>

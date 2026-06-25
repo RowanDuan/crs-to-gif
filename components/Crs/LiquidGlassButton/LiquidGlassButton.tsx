@@ -1,6 +1,8 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { LoadingOutlined } from "@ant-design/icons";
 
+import "./LiquidGlassButton.css";
+
 type LiquidGlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   icon?: ReactNode;
   loading?: boolean;
