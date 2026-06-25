@@ -1,108 +1,108 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import {
   ClearOutlined,
   LoadingOutlined,
   UploadOutlined,
-} from "@ant-design/icons";
-import { Image, message, Spin, Upload } from "antd";
-import type { UploadProps } from "antd";
+} from "@ant-design/icons"
+import { Image, message, Spin, Upload } from "antd"
+import type { UploadProps } from "antd"
 
-import LiquidGlassButton from "@/components/LiquidGlassButton/LiquidGlassButton";
+import LiquidGlassButton from "@/components/LiquidGlassButton/LiquidGlassButton"
 
 import {
   crsToGifBlob,
   downloadBlob,
   parseCrs,
   type CrsAnimInfo,
-} from "@/lib/crsToGif";
+} from "@/lib/crsToGif"
 
-const MAX_FILES = 5;
+const MAX_FILES = 5
 
 type ConvertedItem = {
-  uid: string;
-  fileName: string;
-  gifUrl: string;
-  animInfo: CrsAnimInfo;
-};
+  uid: string
+  fileName: string
+  gifUrl: string
+  animInfo: CrsAnimInfo
+}
 
 export default function TransformCrs() {
-  const [loading, setLoading] = useState(false);
-  const [items, setItems] = useState<ConvertedItem[]>([]);
+  const [loading, setLoading] = useState(false)
+  const [items, setItems] = useState<ConvertedItem[]>([])
 
   useEffect(() => {
     return () => {
-      items.forEach((item) => URL.revokeObjectURL(item.gifUrl));
-    };
-  }, [items]);
+      items.forEach((item) => URL.revokeObjectURL(item.gifUrl))
+    }
+  }, [items])
 
   const convertFiles = async (files: File[]) => {
     if (files.length > MAX_FILES) {
-      message.error(`最多同时转换 ${MAX_FILES} 个文件`);
-      return;
+      message.error(`最多同时转换 ${MAX_FILES} 个文件`)
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     setItems((prev) => {
-      prev.forEach((item) => URL.revokeObjectURL(item.gifUrl));
-      return [];
-    });
+      prev.forEach((item) => URL.revokeObjectURL(item.gifUrl))
+      return []
+    })
 
-    const results: ConvertedItem[] = [];
-    const errors: string[] = [];
+    const results: ConvertedItem[] = []
+    const errors: string[] = []
 
     for (const file of files) {
       try {
-        const buffer = await file.arrayBuffer();
-        const { info } = parseCrs(buffer);
-        const gifBlob = crsToGifBlob(buffer);
-        const url = URL.createObjectURL(gifBlob);
+        const buffer = await file.arrayBuffer()
+        const { info } = parseCrs(buffer)
+        const gifBlob = crsToGifBlob(buffer)
+        const url = URL.createObjectURL(gifBlob)
         results.push({
           uid: `${file.name}-${crypto.randomUUID()}`,
           fileName: file.name.replace(/\.crs$/i, ""),
           gifUrl: url,
           animInfo: info,
-        });
+        })
       } catch (error) {
-        const msg = error instanceof Error ? error.message : "转换失败";
-        errors.push(`${file.name}: ${msg}`);
+        const msg = error instanceof Error ? error.message : "转换失败"
+        errors.push(`${file.name}: ${msg}`)
       }
     }
 
-    setItems(results);
+    setItems(results)
 
     if (results.length > 0) {
-      message.success(`成功转换 ${results.length} 个文件`);
+      message.success(`成功转换 ${results.length} 个文件`)
     }
     if (errors.length > 0) {
-      message.error(errors.join("；"));
+      message.error(errors.join("；"))
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const handleClear = () => {
     setItems((prev) => {
-      prev.forEach((item) => URL.revokeObjectURL(item.gifUrl));
-      return [];
-    });
-  };
+      prev.forEach((item) => URL.revokeObjectURL(item.gifUrl))
+      return []
+    })
+  }
 
   const handleBeforeUpload: UploadProps["beforeUpload"] = (file, fileList) => {
     if (fileList.length > MAX_FILES) {
       if (file.uid === fileList[0]?.uid) {
-        message.error(`最多同时转换 ${MAX_FILES} 个文件`);
+        message.error(`最多同时转换 ${MAX_FILES} 个文件`)
       }
-      return Upload.LIST_IGNORE;
+      return Upload.LIST_IGNORE
     }
 
-    const isLast = fileList[fileList.length - 1]?.uid === file.uid;
-    if (!isLast) return false;
+    const isLast = fileList[fileList.length - 1]?.uid === file.uid
+    if (!isLast) return false
 
-    void convertFiles([...fileList]);
-    return false;
-  };
+    void convertFiles([...fileList])
+    return false
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -156,8 +156,8 @@ export default function TransformCrs() {
             const handleDownload = () => {
               fetch(item.gifUrl)
                 .then((r) => r.blob())
-                .then((blob) => downloadBlob(blob, `${item.fileName}.gif`));
-            };
+                .then((blob) => downloadBlob(blob, `${item.fileName}.gif`))
+            }
 
             return (
               <div key={item.uid} className="flex flex-col gap-2">
@@ -177,18 +177,18 @@ export default function TransformCrs() {
                   className="transform-crs-download"
                   onClick={handleDownload}
                   onKeyDown={(e) => {
-                    if (e.key !== "Enter" && e.key !== " ") return;
-                    e.preventDefault();
-                    handleDownload();
+                    if (e.key !== "Enter" && e.key !== " ") return
+                    e.preventDefault()
+                    handleDownload()
                   }}
                 >
                   下载 {item.fileName}.gif
                 </span>
               </div>
-            );
+            )
           })}
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -4,7 +4,7 @@ import "./globals.css"
 
 export const metadata = {
   title: "CRS Project",
-  description: "Matrix keyboard CRS to GIF converter",
+  description: "CRS to GIF converter",
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
