@@ -4,7 +4,11 @@ export const metadata = {
   title: "Ethers",
 }
 
-export default function Page() {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export default async function Page() {
+  await sleep(1000)
+
   return (
     <main className="flex min-h-screen items-center justify-center">
       <EthersPage />

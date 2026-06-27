@@ -1,9 +1,19 @@
-"use client";
+"use client"
 
-import { memo } from "react";
+import { memo } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 const EthersPage = () => {
-  return <p>This is Ethers Page</p>;
-};
+  const router = useRouter()
 
-export default memo(EthersPage);
+  return (
+    <div>
+      <p>This is Ethers Page</p>
+      {/* <hr /> */}
+      {/* <Link href="/">HOME</Link> */}
+    </div>
+  )
+}
+
+export default memo(EthersPage)
