@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
 import { formatTime } from "@/lib/formatTime"
+import MyERC20 from "@/lib/contracts/MyERC20.json"
 
 const formSchema = z.object({
   address: z.string().min(1, "请输入地址"),
@@ -42,8 +43,7 @@ declare global {
 }
 type TransferFormValues = z.infer<typeof formSchema>
 
-import MyERC20 from "./MyERC20.json"
-const ACCOUNT1_ADDRESS = "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda"
+// const ACCOUNT1_ADDRESS = "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda"
 const ACCOUNT2_ADDRESS = "0xBAFdb5801EA302aA7d28704c4db470217D321593"
 const MY_ERC20_ADDRESS = "0xc6f1c35b7764916bfb8c89c001f06cb02b1e7721"
 

@@ -6,8 +6,7 @@ import { ethers, BrowserProvider, parseEther } from "ethers"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
-
-import MyERC20 from "./MyERC20.json"
+import MyERC20 from "@/lib/contracts/MyERC20.json"
 
 declare global {
   interface Window {
