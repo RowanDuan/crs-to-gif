@@ -65,7 +65,7 @@ const EthersPage = () => {
     balance: "",
     transactionCount: 0,
   })
-  const [searchAddress, setSearchAddress] = useState(ACCOUNT1_ADDRESS)
+  const [searchAddress, setSearchAddress] = useState("")
   const [searchRes, setSearchRes] = useState("")
   const [searchERC20Res, setSearchERC20Res] = useState<ReactNode>("")
   const [searchERC20ContractAddress, setSearchERC20ContractAddress] =
@@ -99,7 +99,6 @@ const EthersPage = () => {
   } = form
 
   const handleLinkWallet = useCallback(async () => {
-    setLoading(true)
     // const providerSepolia = await new ethers.JsonRpcProvider(
     //   ALCHEMY_SEPOLIA_URL
     // )
@@ -107,6 +106,7 @@ const EthersPage = () => {
       toast("请安装 MetaMask")
       return
     }
+    setLoading(true)
     const provider = new BrowserProvider(window.ethereum)
     await provider.send("eth_requestAccounts", [])
     const signer = await provider.getSigner()
@@ -120,6 +120,7 @@ const EthersPage = () => {
       balance: formatEther(balance),
       transactionCount,
     })
+    setSearchAddress(address)
     setLoading(false)
   }, [])
 

@@ -31,8 +31,6 @@ const EthersDemo = () => {
   const [contract, setContract] = useState<any>(null)
 
   const getBalance = useCallback(async () => {
-    setLoading(true)
-
     // Demo 1
     // const provider = ethers.getDefaultProvider()
     // // const balance = await provider.getBalance(`vitalik.eth`)
@@ -103,6 +101,7 @@ const EthersDemo = () => {
       alert("请安装 MetaMask")
       return
     }
+    setLoading(true)
     const provider = new BrowserProvider(window.ethereum)
     // 请求用户授权（会弹出小狐狸）
     await provider.send("eth_requestAccounts", [])
@@ -170,7 +169,6 @@ const EthersDemo = () => {
 
   const handleContract = useCallback(async () => {
     try {
-      setLoading(true)
       // 连接Sepolia测试网
       const providerSepolia = new ethers.JsonRpcProvider(ALCHEMY_SEPOLIA_URL)
 
@@ -179,6 +177,7 @@ const EthersDemo = () => {
         alert("请安装 MetaMask")
         return
       }
+      setLoading(true)
       const provider = new BrowserProvider(window.ethereum)
       // 链接钱包
       await provider.send("eth_requestAccounts", [])
