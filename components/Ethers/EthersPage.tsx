@@ -62,7 +62,7 @@ const EthersPage = () => {
   const [walletSigner, setWalletSigner] = useState<any>(null)
   const [walletMsg, setWalletMsg] = useState({
     address: "",
-    balance: 0,
+    balance: "",
     transactionCount: 0,
   })
   const [searchAddress, setSearchAddress] = useState(ACCOUNT1_ADDRESS)

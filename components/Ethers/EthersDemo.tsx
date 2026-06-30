@@ -173,7 +173,12 @@ const EthersDemo = () => {
       setLoading(true)
       // 连接Sepolia测试网
       const providerSepolia = new ethers.JsonRpcProvider(ALCHEMY_SEPOLIA_URL)
-      // 测试网provider
+
+      // 链接钱包
+      if (typeof window === "undefined" || !window.ethereum) {
+        alert("请安装 MetaMask")
+        return
+      }
       const provider = new BrowserProvider(window.ethereum)
       // 链接钱包
       await provider.send("eth_requestAccounts", [])
