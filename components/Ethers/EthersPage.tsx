@@ -35,12 +35,6 @@ const formSchema = z.object({
   address: z.string().min(1, "请输入地址"),
   amount: z.string().min(1, "请输入金额"),
 })
-
-declare global {
-  interface Window {
-    ethereum?: import("ethers").Eip1193Provider
-  }
-}
 type TransferFormValues = z.infer<typeof formSchema>
 
 // const ACCOUNT1_ADDRESS = "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda"

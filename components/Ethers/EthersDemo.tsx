@@ -8,12 +8,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
 import MyERC20 from "@/lib/contracts/MyERC20.json"
 
-declare global {
-  interface Window {
-    ethereum?: import("ethers").Eip1193Provider
-  }
-}
-
 // const ALCHEMY_MAINNET_URL = "https://rpc.ankr.com/eth"
 // const ALCHEMY_SEPOLIA_URL = "https://rpc.sepolia.org"
 const ALCHEMY_MAINNET_URL = "" // alchemy mainnet
