@@ -32,9 +32,14 @@ import { useCallback, useState } from "react"
 import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
 import { formatTime } from "@/lib/formatTime"
 import MyERC20 from "@/lib/contracts/MyERC20.json"
-// const ACCOUNT1_ADDRESS = "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda"
-const ACCOUNT2_ADDRESS = "0xBAFdb5801EA302aA7d28704c4db470217D321593"
-const MY_ERC20_ADDRESS = "0xc6f1c35b7764916bfb8c89c001f06cb02b1e7721"
+import type { Abi } from "viem"
+// const ACCOUNT1_ADDRESS = "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda" as `0x${string}`
+const ACCOUNT2_ADDRESS =
+  "0xBAFdb5801EA302aA7d28704c4db470217D321593" as `0x${string}`
+const MY_ERC20_ADDRESS =
+  "0xc6f1c35b7764916bfb8c89c001f06cb02b1e7721" as `0x${string}`
+
+const erc20Abi = MyERC20.abi as Abi
 
 export default function WagmiPage() {
   const config = useConfig()
@@ -49,7 +54,7 @@ export default function WagmiPage() {
   const [sendETHAmount, setSendETHAmount] = useState<string>("0.1")
   const [sendETHMsg, setsendETHMsg] = useState("")
   const [searchERC20ContractAddress, setSearchERC20ContractAddress] =
-    useState(MY_ERC20_ADDRESS)
+    useState<string>(MY_ERC20_ADDRESS)
   const [myERC20, setMyERC20] = useState<any>(null)
   const [contractMsg, setContractMsg] = useState<any>({
     name: "",
@@ -57,9 +62,10 @@ export default function WagmiPage() {
     totalSupply: 0,
   })
   const [searchERC20UserAddress, setSearchERC20UserAddress] =
-    useState(ACCOUNT2_ADDRESS)
+    useState<string>(ACCOUNT2_ADDRESS)
   const [searchERC20Res, setSearchERC20Res] = useState("")
-  const [sendERC20Address, setSendERC20Address] = useState(ACCOUNT2_ADDRESS)
+  const [sendERC20Address, setSendERC20Address] =
+    useState<string>(ACCOUNT2_ADDRESS)
   const [sendERC20Amount, setSendERC20Amount] = useState("0.1")
   const [sendERC20Msg, setSendERC20Msg] = useState("")
   const [myERC20Events, setMyERC20Events] = useState<
@@ -69,7 +75,7 @@ export default function WagmiPage() {
 
   useWatchContractEvent({
     address: searchERC20ContractAddress as `0x${string}`,
-    abi: MyERC20.abi,
+    abi: erc20Abi,
     eventName: "Transfer",
     enabled: isListening && !!searchERC20ContractAddress,
     poll: true,
@@ -136,7 +142,7 @@ export default function WagmiPage() {
       setLoading(true)
       const contractInfo = {
         address: MY_ERC20_ADDRESS,
-        abi: MyERC20.abi,
+        abi: erc20Abi,
       }
       const [nameRes, symbolRes, totalSupplyRes] = await readContracts(config, {
         contracts: [
@@ -155,11 +161,11 @@ export default function WagmiPage() {
         ],
       })
       setContractMsg({
-        name: nameRes?.result ?? "",
-        symbol: symbolRes?.result ?? "",
+        name: String(nameRes?.result ?? ""),
+        symbol: String(symbolRes?.result ?? ""),
         totalSupply: totalSupplyRes?.result
-          ? formatEther(totalSupplyRes?.result ?? 0)
-          : 0,
+          ? formatEther(totalSupplyRes.result as bigint)
+          : "0",
       })
     } catch (e) {
       console.error(e)
@@ -176,7 +182,7 @@ export default function WagmiPage() {
       }
       setLoading(true)
       const result = await readContract(config, {
-        abi: MyERC20.abi,
+        abi: erc20Abi,
         address: searchERC20ContractAddress as `0x${string}`,
         functionName: "balanceOf",
         args: [searchERC20UserAddress as `0x${string}`],
@@ -216,7 +222,7 @@ export default function WagmiPage() {
       }
       setLoading(true)
       const hash = await writeContract(config, {
-        abi: MyERC20.abi,
+        abi: erc20Abi,
         address: searchERC20ContractAddress as `0x${string}`,
         functionName: "transfer",
         args: [sendERC20Address as `0x${string}`, parseEther(sendERC20Amount)],

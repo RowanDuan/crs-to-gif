@@ -369,8 +369,7 @@ export default function StakePage() {
         console.log("fromBlock: ", curBlockNumber)
         console.log("toBlock: ", curBlockNumber - BigInt(unstakeLockedVal))
         const res = await getContractEvents(publicClient, {
-          address: STAKE_CONTRACT_ADDRESS,
-          abi: stakeAbi,
+          ...stakeContractQuery,
           eventName: "RequestUnstake",
           fromBlock: curBlockNumber - BigInt(unstakeLockedVal),
           toBlock: curBlockNumber,
