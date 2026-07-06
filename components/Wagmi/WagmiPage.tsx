@@ -14,6 +14,7 @@ import {
   getBalance,
   sendTransaction,
   readContract,
+  readContracts,
   writeContract,
 } from "wagmi/actions"
 import {
@@ -127,6 +128,46 @@ export default function WagmiPage() {
     }
   }, [config, sendETHAddress, sendETHAmount])
 
+  const handleLinkToContract = useCallback(async () => {
+    try {
+      if (!searchERC20ContractAddress) {
+        return
+      }
+      setLoading(true)
+      const contractInfo = {
+        address: MY_ERC20_ADDRESS,
+        abi: MyERC20.abi,
+      }
+      const [nameRes, symbolRes, totalSupplyRes] = await readContracts(config, {
+        contracts: [
+          {
+            ...contractInfo,
+            functionName: "name",
+          },
+          {
+            ...contractInfo,
+            functionName: "symbol",
+          },
+          {
+            ...contractInfo,
+            functionName: "totalSupply",
+          },
+        ],
+      })
+      setContractMsg({
+        name: nameRes?.result ?? "",
+        symbol: symbolRes?.result ?? "",
+        totalSupply: totalSupplyRes?.result
+          ? formatEther(totalSupplyRes?.result ?? 0)
+          : 0,
+      })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [config, searchERC20ContractAddress])
+
   // Get ERC20 balanceOf
   const handleSearchERC20Balance = useCallback(async () => {
     try {
@@ -190,7 +231,13 @@ export default function WagmiPage() {
     } finally {
       setLoading(false)
     }
-  }, [address, config, searchERC20ContractAddress, sendERC20Address, sendERC20Amount])
+  }, [
+    address,
+    config,
+    searchERC20ContractAddress,
+    sendERC20Address,
+    sendERC20Amount,
+  ])
 
   return (
     <div className="">
@@ -266,13 +313,22 @@ export default function WagmiPage() {
                 onChange={(e) => setSearchERC20ContractAddress(e.target.value)}
                 placeholder="Contract Address"
               />
-              {/*<Button
+              {contractMsg.name && (
+                <>
+                  <div className="mt-2">Contract: {contractMsg.name}</div>
+                  <div>
+                    Total Supply: {contractMsg.totalSupply} $
+                    {contractMsg.symbol}
+                  </div>
+                </>
+              )}
+              <Button
                 className="mt-2"
                 onClick={handleLinkToContract}
                 disabled={loading}
               >
                 Get Contract Information
-              </Button>*/}
+              </Button>
 
               <hr className="mt-8 mb-8" />
               <p>Get ERC20 Balance</p>
