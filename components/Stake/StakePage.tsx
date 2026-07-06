@@ -582,11 +582,11 @@ export default function StakePage() {
                     {readyWithdrawList.map((item) => (
                       <div
                         key={item.blockNumber}
-                        className="mt-1 flex items-center justify-between"
+                        className="mt-1 flex items-center justify-between font-bold text-blue-500"
                       >
                         <span>{item.amount} ETH</span>
-                        <span className="mx-2 h-[1px] flex-1 border-t border-dashed border-[#666]" />
-                        <span className="text-xs text-gray-600">
+                        <span className="mx-2 mt-0.5 h-[1px] flex-1 border-t border-dashed border-[#666]" />
+                        <span className="">
                           {item.blockNumberRest} blocks cooldown
                         </span>
                       </div>
