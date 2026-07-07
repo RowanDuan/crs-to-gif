@@ -14,6 +14,7 @@ import {
   useConnect,
   useWatchContractEvent,
   useBlockNumber,
+  useBlock,
 } from "wagmi"
 import {
   getBalance,
@@ -40,10 +41,10 @@ import MyERC20 from "@/lib/contracts/MyERC20.json"
 import { stakeAbi } from "@/lib/contracts/stakeAbi"
 import { isValidNumberValue } from "@/lib/utils"
 
-const ACCOUNT1_ADDRESS =
-  "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda" as `0x${string}`
-const ACCOUNT2_ADDRESS =
-  "0xBAFdb5801EA302aA7d28704c4db470217D321593" as `0x${string}`
+// const ACCOUNT1_ADDRESS =
+//   "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda" as `0x${string}`
+// const ACCOUNT2_ADDRESS =
+//   "0xBAFdb5801EA302aA7d28704c4db470217D321593" as `0x${string}`
 const STAKE_CONTRACT_ADDRESS =
   "0x56682aa855226f3228b374a69aF5017D174372Fe" as `0x${string}`
 const POOL_ID = BigInt(0)
@@ -60,6 +61,7 @@ export default function StakePage() {
   const { data: currentBlockNumber } = useBlockNumber({
     watch: true,
   })
+  const { address: walletAddress } = useAccount()
 
   const [loading, setLoading] = useState(true)
   const [metaNodeConteactAddress, setMetaNodeConteactAddress] = useState("")
@@ -117,6 +119,9 @@ export default function StakePage() {
 
   const initContractInfo = useCallback(async () => {
     try {
+      if (!walletAddress) {
+        return
+      }
       setLoading(true)
       const [metaNodeRes, userRes, poolRes] = await readContracts(config, {
         contracts: [
@@ -127,7 +132,7 @@ export default function StakePage() {
           {
             ...stakeContractQuery,
             functionName: "user",
-            args: [POOL_ID, ACCOUNT1_ADDRESS],
+            args: [POOL_ID, walletAddress],
           },
           {
             ...stakeContractQuery,
@@ -195,7 +200,7 @@ export default function StakePage() {
           {
             ...noteREC20ContractQuery,
             functionName: "balanceOf",
-            args: [ACCOUNT1_ADDRESS],
+            args: [walletAddress],
           },
         ],
       })
@@ -210,16 +215,19 @@ export default function StakePage() {
     } finally {
       setLoading(false)
     }
-  }, [config])
+  }, [config, walletAddress])
 
   const getStakingInfo = useCallback(async () => {
     try {
+      if (!walletAddress) {
+        return
+      }
       const [res] = await readContracts(config, {
         contracts: [
           {
             ...stakeContractQuery,
             functionName: "stakingBalance", //
-            args: [POOL_ID, ACCOUNT1_ADDRESS],
+            args: [POOL_ID, walletAddress],
           },
         ],
       })
@@ -228,7 +236,7 @@ export default function StakePage() {
     } catch (e) {
       console.error(e)
     }
-  }, [config])
+  }, [config, walletAddress])
 
   const handleStakeETH = useCallback(() => {
     if (!isValidNumberValue(stakeValue)) {
@@ -273,7 +281,7 @@ export default function StakePage() {
       const res = await readContract(config, {
         ...REC20ContractQuery,
         functionName: "balanceOf",
-        args: [ACCOUNT1_ADDRESS],
+        args: [walletAddress],
       })
       console.log("getMyMetaNodeToken res: ", res)
       setMetaNodeInfo((cur) => {
@@ -283,21 +291,24 @@ export default function StakePage() {
         }
       })
     })
-  }, [REC20ContractQuery, config, handleCallback])
+  }, [REC20ContractQuery, config, handleCallback, walletAddress])
 
   const getPendingMetaNode = useCallback(async () => {
     try {
+      if (!walletAddress) {
+        return
+      }
       const res = await readContract(config, {
         ...stakeContractQuery,
         functionName: "pendingMetaNode", // 实时计算函数
-        args: [POOL_ID, ACCOUNT1_ADDRESS],
+        args: [POOL_ID, walletAddress],
       })
       console.log("getPendingMetaNode res: ", res)
       setPendingToken(formatEther(res as bigint))
     } catch (e) {
       console.error(e)
     }
-  }, [config])
+  }, [config, walletAddress])
 
   const handleClaim = useCallback(() => {
     if (!isValidNumberValue(pendingToken)) {
@@ -333,10 +344,13 @@ export default function StakePage() {
 
   const getWithdrawInfo = useCallback(async () => {
     try {
+      if (!walletAddress) {
+        return
+      }
       const res = await readContract(config, {
         ...stakeContractQuery,
         functionName: "withdrawAmount",
-        args: [POOL_ID, ACCOUNT1_ADDRESS],
+        args: [POOL_ID, walletAddress],
       })
       console.log("getWithdrawInfo res: ", res)
       const requestAmount = res?.[0] ?? 0
@@ -352,7 +366,7 @@ export default function StakePage() {
     } catch (e) {
       console.error(e)
     }
-  }, [config])
+  }, [config, walletAddress])
 
   const getUnstakeRequests = useCallback(
     async (curBlockNumber: bigint) => {
@@ -374,7 +388,7 @@ export default function StakePage() {
           fromBlock: curBlockNumber - BigInt(unstakeLockedVal),
           toBlock: curBlockNumber,
           args: {
-            user: ACCOUNT1_ADDRESS,
+            user: walletAddress,
             poolId: POOL_ID,
           },
         })
@@ -395,7 +409,7 @@ export default function StakePage() {
         console.error(e)
       }
     },
-    [config, stakeContractInfo.unstakeLockedBlocks]
+    [config, stakeContractInfo.unstakeLockedBlocks, walletAddress]
   )
 
   const handleUnstake = useCallback(() => {
