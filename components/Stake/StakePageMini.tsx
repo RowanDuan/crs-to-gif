@@ -3,22 +3,25 @@
 import { useCallback, useEffect, useMemo, useState, memo } from "react"
 import * as React from "react"
 
-import { getContractEvents } from "viem/actions"
-import type { Abi } from "viem"
 import { formatEther, parseEther } from "ethers"
-import { RefreshCw, RotateCw } from "lucide-react"
+import {
+  // RefreshCw,
+  RotateCw,
+} from "lucide-react"
+import { useMiniWallet } from "miniwallet"
 import { toast } from "sonner"
+import { getContractEvents } from "viem/actions"
 import {
   useConfig,
-  useAccount,
-  useConnect,
-  useWatchContractEvent,
+  // useAccount,
+  // useConnect,
+  // useWatchContractEvent,
   useBlockNumber,
-  useBlock,
+  // useBlock,
 } from "wagmi"
 import {
-  getBalance,
-  sendTransaction,
+  // getBalance,
+  // sendTransaction,
   readContract,
   readContracts,
   writeContract,
@@ -30,10 +33,10 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  // CardDescription,
+  // CardFooter,
+  // CardHeader,
+  // CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
@@ -41,10 +44,8 @@ import MyERC20 from "@/lib/contracts/MyERC20.json"
 import { stakeAbi } from "@/lib/contracts/stakeAbi"
 import { isValidNumberValue } from "@/lib/utils"
 
-// const ACCOUNT1_ADDRESS =
-//   "0x738a73250D686F6A79200a8A9a64e32ed9A9CEda" as `0x${string}`
-// const ACCOUNT2_ADDRESS =
-//   "0xBAFdb5801EA302aA7d28704c4db470217D321593" as `0x${string}`
+import type { Abi } from "viem"
+
 const STAKE_CONTRACT_ADDRESS =
   "0x56682aa855226f3228b374a69aF5017D174372Fe" as `0x${string}`
 const POOL_ID = BigInt(0)
@@ -56,12 +57,17 @@ const stakeContractQuery = {
   abi: stakeAbi,
 }
 
-function StakePage() {
+function StakePageMini() {
   const config = useConfig()
   const { data: currentBlockNumber } = useBlockNumber({
     watch: true,
   })
-  const { address: walletAddress } = useAccount()
+  // const { address: walletAddress2 } = useAccount() // Wagmi
+
+  const { account } = useMiniWallet()
+  const walletAddress = useMemo(() => {
+    return account as `0x${string}` | undefined
+  }, [account])
 
   const [loading, setLoading] = useState(true)
   const [metaNodeConteactAddress, setMetaNodeConteactAddress] = useState("")
@@ -479,7 +485,7 @@ function StakePage() {
   // 查询奖励
   useEffect(() => {
     if (currentBlockNumber) {
-      console.log("currentBlockNumber: ", currentBlockNumber)
+      // console.log("currentBlockNumber: ", currentBlockNumber)
       getPendingMetaNode()
     }
   }, [currentBlockNumber, getPendingMetaNode])
@@ -679,4 +685,4 @@ function StakePage() {
   )
 }
 
-export default memo(StakePage)
+export default memo(StakePageMini)

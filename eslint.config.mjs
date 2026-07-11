@@ -43,6 +43,14 @@ export default defineConfig([
   },
 
   {
+    name: "crs-project/react-hooks",
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
+
+  {
     name: "crs-project/style",
     files: ["**/*.{js,jsx,mjs,ts,tsx}"],
     plugins: {
