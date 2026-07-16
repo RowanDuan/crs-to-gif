@@ -4,7 +4,8 @@ import * as React from "react"
 import { toast } from "sonner"
 
 function formatWord(word: string): string {
-  if (word.length < 3) return word
+  if (word.length < 2) return word
+  if (word.length === 2) return word[0] + "x"
   return word[0] + "x".repeat(word.length - 2) + word[word.length - 1]
 }
 
