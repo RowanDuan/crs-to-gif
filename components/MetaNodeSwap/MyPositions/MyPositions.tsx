@@ -5,6 +5,7 @@ import Big from "big.js"
 import { formatEther } from "ethers"
 import { RotateCw, XIcon } from "lucide-react"
 import { useMiniWallet } from "miniwallet"
+import { toast } from "sonner"
 import { useConfig } from "wagmi"
 import { readContract } from "wagmi/actions"
 
@@ -61,17 +62,28 @@ function MyPositions() {
     }
     return positions
       .filter((p) => {
-        if (
-          filter.token0 &&
-          p.token0Symbol !== getTokenSymbol(filter.token0 as Address)
-        ) {
-          return false
-        }
-        if (
-          filter.token1 &&
-          p.token1Symbol !== getTokenSymbol(filter.token1 as Address)
-        ) {
-          return false
+        const symbol0 = filter.token0
+          ? getTokenSymbol(filter.token0 as Address)
+          : ""
+        const symbol1 = filter.token1
+          ? getTokenSymbol(filter.token1 as Address)
+          : ""
+
+        if (symbol0 && symbol1) {
+          // C/D 与 D/C 都显示
+          const forward =
+            p.token0Symbol === symbol0 && p.token1Symbol === symbol1
+          const reverse =
+            p.token0Symbol === symbol1 && p.token1Symbol === symbol0
+          if (!forward && !reverse) return false
+        } else if (symbol0) {
+          if (p.token0Symbol !== symbol0 && p.token1Symbol !== symbol0) {
+            return false
+          }
+        } else if (symbol1) {
+          if (p.token0Symbol !== symbol1 && p.token1Symbol !== symbol1) {
+            return false
+          }
         }
         if (filter.fee) {
           const feePct = Big(filter.fee).div(1_000_000).times(100).toFixed(4)
@@ -134,6 +146,7 @@ function MyPositions() {
       setPositions(list)
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Load positions failed")
     } finally {
       setLoading(false)
     }
@@ -289,7 +302,7 @@ function MyPositions() {
               </TableHead>
               <TableHead>Fee</TableHead>
               <TableHead>Price Range</TableHead>
-              <TableHead>Owed0/Owed1</TableHead>
+              {/*<TableHead>Owed0/Owed1</TableHead>*/}
               <TableHead className="text-right">Liquidity</TableHead>
               {/*<TableHead className="text-right">Index</TableHead>*/}
               <TableHead className="text-right">Actions</TableHead>
@@ -315,10 +328,10 @@ function MyPositions() {
                   <TableCell>
                     [{p.lowerPrice} - {p.upperPrice}]
                   </TableCell>
-                  <TableCell>
+                  {/*<TableCell>
                     {Big(p.tokensOwed0).toFixed(5)}/
                     {Big(p.tokensOwed1).toFixed(5)}
-                  </TableCell>
+                  </TableCell>*/}
                   <TableCell className="text-right">{p.liquidity}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

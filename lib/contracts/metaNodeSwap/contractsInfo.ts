@@ -57,6 +57,15 @@ export const SWAP_ROUTER_CONTRACT_QUERY = {
   abi: SWAP_ROUTER_ABI,
 }
 
+/** 滑点分母：value / SLIPPAGE_SCALE，如 50 → 0.05% */
+export const SLIPPAGE_SCALE = BigInt(100_000)
+export const SLIPPAGE_OPTIONS = [
+  { label: "0.01%", value: "10" },
+  { label: "0.025%", value: "25" },
+  { label: "0.05%", value: "50" },
+  { label: "0.1%", value: "100" },
+] as const
+
 export const MN_TOKEN_LIST = [
   {
     label: "MNTA",

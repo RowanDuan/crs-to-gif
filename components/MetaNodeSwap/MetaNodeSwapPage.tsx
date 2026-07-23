@@ -36,7 +36,7 @@ export default function MetaNodeSwapPage() {
       <header className="relative flex min-h-[37px] items-center justify-center">
         <h1 className="absolute left-0 z-10 text-2xl font-bold">
           {/* Meta Node Swap */}
-          Mxxa Nxxe Sxxp
+          Meta Node Swap
         </h1>
         {isConnected && isSepolia && (
           <div className="flex items-center justify-center space-x-6 *:cursor-pointer">

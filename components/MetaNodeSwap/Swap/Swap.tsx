@@ -2,9 +2,11 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import * as React from "react"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { XIcon } from "lucide-react"
+import { TickMath } from "@uniswap/v3-sdk"
+import { formatEther, parseEther } from "ethers"
 import { useMiniWallet } from "miniwallet"
 import { Controller, useForm, useWatch } from "react-hook-form"
+import { toast } from "sonner"
 import { useConfig } from "wagmi"
 import {
   simulateContract,
@@ -15,20 +17,8 @@ import {
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card"
 import { Field, FieldError } from "@/components/ui/field"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
-import { Spinner } from "@/components/ui/spinner"
-import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group"
 import {
   Select,
   SelectContent,
@@ -36,24 +26,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
+import { SpinnerOverlay } from "@/components/ui/spinner-overlay"
 import {
   getTokenSymbol,
-  MN_TOKEN_D_ADDRESS,
   MN_TOKEN_LIST,
+  SLIPPAGE_OPTIONS,
+  SLIPPAGE_SCALE,
   SWAP_ROUTER_ADDRESS,
   SWAP_ROUTER_CONTRACT_QUERY,
 } from "@/lib/contracts/metaNodeSwap/contractsInfo"
+import { MN_TOKEN_ABI } from "@/lib/contracts/metaNodeSwap/mnTokenAbi"
 import { getAllPools } from "@/lib/contracts/metaNodeSwap/queries"
 import {
   Address,
   PoolItem,
   QuoteMode,
 } from "@/lib/contracts/metaNodeSwap/types"
-import { formatEther, parseEther } from "ethers"
-import { TickMath } from "@uniswap/v3-sdk"
 import { buildIndexPathFromPools } from "@/lib/contracts/metaNodeSwap/utils"
-import { MN_TOKEN_ABI } from "@/lib/contracts/metaNodeSwap/mnTokenAbi"
-import { toast } from "sonner"
+
 import TokenBalance from "./TokenBalance"
 
 const formSchema = z.object({
@@ -70,15 +61,14 @@ function Swap() {
   const { account } = useMiniWallet()
   const [loading, setLoading] = useState(false)
   const [quotingMode, setQuotingMode] = useState<QuoteMode | null>(null)
+  const [slippage, setSlippage] = useState<string>("50") // 默认 0.05%
   const [pools, setPools] = useState<PoolItem[]>([])
   const [swapParams, setSwapParams] = useState<{
     mode: QuoteMode
     indexPath: number[]
-    amountOutMinimum: bigint
   }>({
     mode: QuoteMode.ExactInput,
     indexPath: [],
-    amountOutMinimum: BigInt(0),
   })
 
   const form = useForm<FormValues>({
@@ -102,16 +92,6 @@ function Swap() {
   const token0 = useWatch({ control, name: "token0" })
   const token1 = useWatch({ control, name: "token1" })
 
-  const token0Symbol = useMemo(() => {
-    if (!token0) return ""
-    return getTokenSymbol(token0 as Address)
-  }, [token0])
-
-  const token1Symbol = useMemo(() => {
-    if (!token1) return ""
-    return getTokenSymbol(token1 as Address)
-  }, [token1])
-
   const isExactOutputMode = useMemo(
     () => swapParams.mode === QuoteMode.ExactOutput,
     [swapParams.mode]
@@ -130,6 +110,7 @@ function Swap() {
         if (!cancelled) setPools(list)
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e.message : "Load pools failed")
       }
     })()
     return () => {
@@ -188,20 +169,14 @@ function Swap() {
               })
 
         const quoted = (res?.result ?? BigInt(0)) as bigint
-        // ExactInput：0.5% 滑点
-        const amountOutMinimum =
-          mode === QuoteMode.ExactInput
-            ? (quoted * BigInt(9950)) / BigInt(10000)
-            : BigInt(0)
-
         setSwapParams({
           mode,
           indexPath,
-          amountOutMinimum,
         })
         return formatEther(quoted)
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e.message : "Quote failed")
         return "0"
       }
     },
@@ -226,6 +201,7 @@ function Swap() {
           if (quoted != null) setValue(target, quoted)
         } catch (e) {
           console.error(e)
+          toast.error(e instanceof Error ? e.message : "Quote failed")
         } finally {
           setQuotingMode(null)
         }
@@ -253,6 +229,10 @@ function Swap() {
   )
 
   const handleCheckQuoteAmount = useCallback(() => {
+    const selectedToken0 = getValues("token0")
+    const selectedToken1 = getValues("token1")
+    if (!selectedToken0 || !selectedToken1) return
+
     const token0Amount = getValues("token0Amount")
     const token1Amount = getValues("token1Amount")
     console.log("token0Amount: ", token0Amount)
@@ -307,9 +287,15 @@ function Swap() {
         setLoading(true)
         const tokenIn = getValues("token0") as Address
         const tokenOut = getValues("token1") as Address
-        const amountIn = parseEther(data.token0Amount)
         const recipient = account as Address
         if (isExactInputMode) {
+          const amountIn = parseEther(data.token0Amount)
+          const slip = BigInt(slippage)
+          // 计算滑点
+          const amountOutMinimum =
+            (parseEther(data.token1Amount) * (SLIPPAGE_SCALE - slip)) /
+            SLIPPAGE_SCALE
+
           // Get allowance
           const allowance = await readContract(config, {
             address: tokenIn,
@@ -318,6 +304,7 @@ function Swap() {
             args: [recipient, SWAP_ROUTER_ADDRESS],
           })
           console.log("amountIn: ", amountIn)
+          console.log("amountOutMinimum: ", amountOutMinimum)
           console.log("allowance: ", allowance)
           if (allowance < amountIn) {
             // Approve
@@ -348,8 +335,7 @@ function Swap() {
             recipient: recipient,
             deadline: BigInt(Math.floor(Date.now() / 1000) + 60 * 20), // Unix 时间戳，20分钟后
             amountIn,
-            // 用 quote 结果做最小输出（已含滑点），切勿填 MAX_SQRT_RATIO
-            amountOutMinimum: swapParams.amountOutMinimum, // TODO: 滑点
+            amountOutMinimum,
             sqrtPriceLimitX96,
           }
           console.log("exactInput query: ", query)
@@ -362,15 +348,69 @@ function Swap() {
           console.log("receipt: ", receipt)
           toast.success("Swap successful")
         } else {
-          // TODO
+          const amountOut = parseEther(data.token1Amount)
+          const slip = BigInt(slippage)
+          // 计算滑点
+          const amountInMaximum =
+            (parseEther(data.token0Amount) * (SLIPPAGE_SCALE + slip)) /
+            SLIPPAGE_SCALE
+
+          const allowance = await readContract(config, {
+            address: tokenIn,
+            abi: MN_TOKEN_ABI,
+            functionName: "allowance",
+            args: [recipient, SWAP_ROUTER_ADDRESS],
+          })
+          console.log("amountOut: ", amountOut)
+          console.log("amountInMaximum: ", amountInMaximum)
+          console.log("allowance: ", allowance)
+          if (allowance < amountInMaximum) {
+            const approveHash = await writeContract(config, {
+              address: tokenIn,
+              abi: MN_TOKEN_ABI,
+              functionName: "approve",
+              args: [SWAP_ROUTER_ADDRESS, amountInMaximum],
+            })
+            console.log("approveHash: ", approveHash)
+            const approveReceipt = await waitForTransactionReceipt(config, {
+              hash: approveHash,
+            })
+            console.log("approveReceipt: ", approveReceipt)
+          }
+
+          const zeroForOne = tokenIn.toLowerCase() < tokenOut.toLowerCase()
+          const sqrtPriceLimitX96 = zeroForOne
+            ? BigInt(TickMath.MIN_SQRT_RATIO.toString()) + BigInt(1)
+            : BigInt(TickMath.MAX_SQRT_RATIO.toString()) - BigInt(1)
+
+          const query = {
+            tokenIn,
+            tokenOut,
+            indexPath: swapParams.indexPath,
+            recipient,
+            deadline: BigInt(Math.floor(Date.now() / 1000) + 60 * 20),
+            amountOut,
+            amountInMaximum,
+            sqrtPriceLimitX96,
+          }
+          console.log("exactOutput query: ", query)
+          const hash = await writeContract(config, {
+            ...SWAP_ROUTER_CONTRACT_QUERY,
+            functionName: "exactOutput",
+            args: [query],
+          })
+          const receipt = await waitForTransactionReceipt(config, { hash })
+          console.log("receipt: ", receipt)
+          toast.success("Swap successful")
         }
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e.message : "Swap failed")
       } finally {
         setLoading(false)
       }
     },
-    [account, config, getValues, isExactInputMode, swapParams]
+    [account, config, getValues, isExactInputMode, slippage, swapParams]
   )
 
   useEffect(() => {
@@ -379,42 +419,8 @@ function Swap() {
     }
   }, [])
 
-  const handleMintMNT = useCallback(async () => {
-    const hash = await writeContract(config, {
-      address: MN_TOKEN_D_ADDRESS,
-      abi: MN_TOKEN_ABI,
-      functionName: "mint",
-      args: [account as Address, parseEther("888888")],
-      // value,
-    })
-    console.log("hash: ", hash)
-    const receipt = await waitForTransactionReceipt(config, {
-      hash,
-    })
-    console.log("receipt: ", receipt)
-  }, [account, config])
-  console.log(
-    "888964798713646049502963: ",
-    formatEther("888964798713646049502963")
-  )
-
   return (
     <div className="mx-auto w-full max-w-[1200px] pt-8">
-      <Button
-        onClick={() => {
-          handleQuote("0.1", QuoteMode.ExactInput)
-        }}
-      >
-        handleQuoteExactInput
-      </Button>
-      <Button
-        onClick={() => {
-          handleQuote("0.001", QuoteMode.ExactOutput)
-        }}
-      >
-        handleQuoteExactOutput
-      </Button>
-      <Button onClick={handleMintMNT}>handleMintMNT</Button>
       <h2 className="text-center text-3xl font-semibold">Swap</h2>
       <div className="mx-auto mt-4 flex h-auto w-[600px] flex-col gap-3 rounded-3xl bg-white px-8 py-12">
         <div className="relative w-full space-y-6">
@@ -426,9 +432,24 @@ function Swap() {
             })}
           >
             <div>
-              <p className="mb-2 text-lg font-medium text-black">
-                Token Amount
-              </p>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-lg font-medium text-black">Token Amount</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Slippage</span>
+                  <Select value={slippage} onValueChange={setSlippage}>
+                    <SelectTrigger className="h-8 w-[100px] cursor-pointer">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SLIPPAGE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="space-y-4">
                 <SpinnerOverlay loading={quotingMode === QuoteMode.ExactOutput}>
                   <div

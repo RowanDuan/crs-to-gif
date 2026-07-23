@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useState } from "react"
 import { formatEther } from "ethers"
 import { RotateCw } from "lucide-react"
 import { useMiniWallet } from "miniwallet"
+import { toast } from "sonner"
 import { useConfig } from "wagmi"
 import { readContract } from "wagmi/actions"
 
@@ -36,6 +37,7 @@ function TokenBalance({ tokenAddress }: { tokenAddress?: string }) {
       setBalance(Number(formatEther(raw)).toFixed(5))
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Load balance failed")
       setBalance("0.00000")
     } finally {
       setLoading(false)

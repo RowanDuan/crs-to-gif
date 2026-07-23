@@ -46,6 +46,7 @@ const CollectPosition = ({
       getMyPositionsAgain()
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Collect failed")
     } finally {
       setLoading(false)
     }

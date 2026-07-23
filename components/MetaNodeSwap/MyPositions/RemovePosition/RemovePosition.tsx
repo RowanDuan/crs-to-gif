@@ -44,6 +44,7 @@ const RemovePosition = ({
       getMyPositionsAgain()
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Remove failed")
     } finally {
       setLoading(false)
     }

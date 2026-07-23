@@ -3,6 +3,7 @@ import * as React from "react"
 
 import { RotateCw, XIcon } from "lucide-react"
 import { useMiniWallet } from "miniwallet"
+import { toast } from "sonner"
 import {
   useConfig,
   // useAccount,
@@ -56,19 +57,30 @@ function Pool({ toMyPositionsTab }: { toMyPositionsTab: () => void }) {
   const [poolPosition, setPoolPosition] = useState<PoolItem | null>(null)
 
   const poolList = useMemo(() => {
+    const symbol0 = filter.token0
+      ? getTokenSymbol(filter.token0 as Address)
+      : ""
+    const symbol1 = filter.token1
+      ? getTokenSymbol(filter.token1 as Address)
+      : ""
+
     return pools
       .filter((pool) => {
-        if (
-          filter.token0 &&
-          pool.token0Symbol !== getTokenSymbol(filter.token0 as Address)
-        ) {
-          return false
-        }
-        if (
-          filter.token1 &&
-          pool.token1Symbol !== getTokenSymbol(filter.token1 as Address)
-        ) {
-          return false
+        if (symbol0 && symbol1) {
+          // C/D 与 D/C 都显示
+          const forward =
+            pool.token0Symbol === symbol0 && pool.token1Symbol === symbol1
+          const reverse =
+            pool.token0Symbol === symbol1 && pool.token1Symbol === symbol0
+          if (!forward && !reverse) return false
+        } else if (symbol0) {
+          if (pool.token0Symbol !== symbol0 && pool.token1Symbol !== symbol0) {
+            return false
+          }
+        } else if (symbol1) {
+          if (pool.token0Symbol !== symbol1 && pool.token1Symbol !== symbol1) {
+            return false
+          }
         }
         if (filter.fee) {
           if (pool.fee !== Number(filter.fee)) return false
@@ -104,6 +116,7 @@ function Pool({ toMyPositionsTab }: { toMyPositionsTab: () => void }) {
       setPools(list)
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Load pools failed")
     } finally {
       setLoading(false)
     }
@@ -114,6 +127,7 @@ function Pool({ toMyPositionsTab }: { toMyPositionsTab: () => void }) {
       setPoolPosition(p)
     } catch (e) {
       console.error(e)
+      toast.error(e instanceof Error ? e.message : "Add position failed")
     }
   }, [])
 

@@ -100,6 +100,7 @@ function PositionModal({
         setValue("token1Amount", formatEther(amount1Wei))
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e.message : "Calculate amount failed")
         setValue("token1Amount", "0")
       }
     },
@@ -121,6 +122,7 @@ function PositionModal({
         setValue("token0Amount", formatEther(amount0Wei))
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e.message : "Calculate amount failed")
         setValue("token0Amount", "0")
       }
     },
@@ -203,8 +205,10 @@ function PositionModal({
         })
         toast("Add position successfully!")
         console.log("receipt: ", receipt)
+        closeModal()
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e?.message : "Add position failed")
       } finally {
         setLoading(false)
       }

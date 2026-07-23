@@ -1,78 +1,45 @@
-import { useState, useMemo, useCallback, memo, useEffect } from "react"
-import Big from "big.js"
-import { TickMath, encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
-import { useForm, Controller } from "react-hook-form"
-import * as z from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckIcon, XIcon, CircleXIcon } from "lucide-react"
+import { useState, useCallback, memo, useEffect } from "react"
+import * as React from "react"
 
-import { ethers, BrowserProvider, parseEther } from "ethers"
-import { useMiniWallet } from "miniwallet"
-import {
-  useConfig,
-  // useAccount,
-  // useConnect,
-  // useWatchContractEvent,
-  useBlockNumber,
-  // useBlock,
-} from "wagmi"
-import {
-  // getBalance,
-  // sendTransaction,
-  readContract,
-  readContracts,
-  writeContract,
-  waitForTransactionReceipt,
-  getPublicClient,
-} from "wagmi/actions"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
+import Big from "big.js"
+import { XIcon } from "lucide-react"
+import { useForm, Controller } from "react-hook-form"
+import { toast } from "sonner"
+import { useConfig } from "wagmi"
+import { writeContract, waitForTransactionReceipt } from "wagmi/actions"
+import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { toast } from "sonner"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldError,
-  FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
 import {
-  FEE_LIST,
-  MN_TOKEN_A_ADDRESS,
-  MN_TOKEN_LIST,
-  POOL_CONTRACT_QUERY,
-} from "@/lib/contracts/metaNodeSwap/contractsInfo"
-import { MN_TOKEN_ABI } from "@/lib/contracts/metaNodeSwap/mnTokenAbi"
-import { Address, PoolItem } from "@/lib/contracts/metaNodeSwap/types"
-
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
-import * as React from "react"
+  FEE_LIST,
+  MN_TOKEN_A_ADDRESS,
+  MN_TOKEN_LIST,
+  POOL_CONTRACT_QUERY,
+} from "@/lib/contracts/metaNodeSwap/contractsInfo"
+import { Address } from "@/lib/contracts/metaNodeSwap/types"
 import {
   formatSqrt,
   getTickFromPrice,
@@ -178,12 +145,16 @@ function PoolModal({ closeAddModal }: { closeAddModal: () => void }) {
         const inverted = token0.toLowerCase() !== data.token0.toLowerCase()
         // 价格取倒数, 再格式化
         const currentPrice = geyInvertedPrice(data.currentPrice, inverted)
-        const tickLower = getTickFromPrice(
+        let tickLower = getTickFromPrice(
           geyInvertedPrice(data.lowPrice, inverted)
-        ) // 转价格为 SqrtRatioX96, 再转为tick
-        const tickUpper = getTickFromPrice(
+        )
+        let tickUpper = getTickFromPrice(
           geyInvertedPrice(data.upperPrice, inverted)
-        ) // 转价格为 SqrtRatioX96, 再转为tick
+        )
+        // 取倒数后原 low/upper 对应 tick 会颠倒，必须保证 tickLower < tickUpper
+        if (tickLower > tickUpper) {
+          ;[tickLower, tickUpper] = [tickUpper, tickLower]
+        }
 
         const query = {
           token0: token0 as Address,
@@ -206,8 +177,10 @@ function PoolModal({ closeAddModal }: { closeAddModal: () => void }) {
         })
         toast("Add pool successfully!")
         console.log("receipt: ", receipt)
+        closeAddModal()
       } catch (e) {
         console.error(e)
+        toast.error(e instanceof Error ? e?.message : "Add pool failed")
       } finally {
         setLoading(false)
       }
@@ -222,7 +195,7 @@ function PoolModal({ closeAddModal }: { closeAddModal: () => void }) {
         className="absolute top-1/2 left-1/2 flex h-auto w-[580px] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-3xl bg-white p-6"
       >
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-2xl font-bold">Axx Pxxx</span>
+          <span className="text-2xl font-bold">Add Pool</span>
           <button
             type="button"
             aria-label="Close"
