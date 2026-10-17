@@ -103,7 +103,12 @@ const EthersPage = () => {
     setLoading(true)
     const provider = new BrowserProvider(window.ethereum)
     await provider.send("eth_requestAccounts", [])
+
+    // 拿到的不是签名，而是钱包签名者对象（对应当前账户）
+    // 可以理解为它是用户钱包的签名者（Signer）
+    // getSigner() 不传参数时，用的是钱包当前选中的那个账户（一般是 eth_requestAccounts 返回的第一个）。
     const signer = await provider.getSigner()
+
     const address = await signer.getAddress()
     const balance = await provider.getBalance(address)
     const transactionCount = await provider.getTransactionCount(address)
