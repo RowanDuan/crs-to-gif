@@ -11,14 +11,18 @@ function formatWordKeepEnds(word: string): string {
 
 function formatWordKeepFirst(word: string): string {
   let seenFirstLetter = false
+  let prevWasLower = false
   return [...word]
     .map((ch) => {
-      if (/[^A-Za-z]/.test(ch)) return ch
-      if (/[A-Z]/.test(ch) || !seenFirstLetter) {
-        seenFirstLetter = true
+      if (/[^A-Za-z]/.test(ch)) {
+        prevWasLower = false
         return ch
       }
-      return "x"
+      const isUpper = /[A-Z]/.test(ch)
+      const keep = !seenFirstLetter || (isUpper && prevWasLower)
+      seenFirstLetter = true
+      prevWasLower = !isUpper
+      return keep ? ch : "x"
     })
     .join("")
 }
